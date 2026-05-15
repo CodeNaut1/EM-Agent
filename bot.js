@@ -35,17 +35,18 @@ async function getServiceDetails(serviceId) {
 }
 
 async function registerAgent() {
-  const res = await fetch(`${ZAPADS_API}/agents/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      pubkey: 'em-agent-001',
-      display_name: 'EM Agent'
-    })
-  });
-  const data = await res.json();
-  return data;
-}
+    const res = await fetch(`${ZAPADS_API}/agents/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        pubkey: 'em-agent-' + Date.now(),
+        display_name: 'EM Agent (Z)'
+      })
+    });
+    const data = await res.json();
+    console.log('FULL REGISTRATION RESPONSE:', JSON.stringify(data, null, 2));
+    return data;
+  }
 
 // --- Brain ---
 
@@ -132,14 +133,15 @@ client.on('messageCreate', async (message) => {
 
     // Handle ZapAds registration command
     if (userMessage.toLowerCase().includes('register on zapads')) {
-        if (process.env.ZAPADS_AGENT_KEY) {
+        if (process.env.ZAPADS_AGENT_KEY && process.env.ZAPADS_AGENT_KEY.length > 5) {
           await message.reply('Already registered on ZapAds ✅ Agent key is loaded.');
           return;
         }
         try {
           const reg = await registerAgent();
+          const response = JSON.stringify(reg, null, 2);
           await message.reply(
-            `Registered on ZapAds! 🎉\n\n**API Key:** \`${reg.api_key}\`\n\n⚠️ **Save this key NOW — it's shown only once!**\nAdd it as \`ZAPADS_AGENT_KEY\` in your environment variables, then restart me.`
+            `Registered on ZapAds! 🎉\n\nFull response:\n\`\`\`json\n${response}\n\`\`\`\n\n⚠️ **Copy the api_key NOW — shown only once!**\nAdd it as \`ZAPADS_AGENT_KEY\` in your env variables, then restart me.`
           );
         } catch (err) {
           await message.reply(`Registration failed: ${err.message}`);
