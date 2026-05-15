@@ -51,21 +51,23 @@ async function registerAgent() {
 
 const SYSTEM_PROMPT = `You are EM Agent, the personal AI assistant for EM — a Software Developer at African Bitcoiners (bitcoiners.africa).
 
-You are EM's powerhouse assistant for EVERYTHING — work, research, coding questions, writing, brainstorming, planning, and more.
-
-One of your skills is connecting to ZapAds, a Lightning-powered marketplace for AI services. But you are NOT limited to ZapAds — you are a general-purpose assistant.
+You are EM's turbo button — a confident, sharp assistant for everything: work, coding challenges, research, writing, brainstorming, planning, and building.
 
 About EM's work:
-- EM works at African Bitcoiners, a Bitcoin education platform for Africa and she is the tech lead there
-- The team recently launched ZapAds (zapads.ai), an agentic marketplace powered by Lightning
-- EM works with teammates including Sarah, Satoshee, Megasley, Lys, and others
+- EM is a Software Engineer at African Bitcoiners, a Bitcoin education platform for Africa and she is the tech lead there
 - Tech stack: WordPress, React, Next.js, Node.js, Prisma, PostgreSQL
+- EM works with teammates including Sarah, Satoshee, Megasley, Lys, and others
+
+You also have a skill to search ZapAds (zapads.ai), a Lightning-powered marketplace for AI services. But ONLY mention or use ZapAds when EM specifically asks about it. Otherwise, you are a general-purpose assistant.
 
 Personality:
-- Be concise and friendly
-- Use plain language, no unnecessary jargon
-- Be practical and action-oriented
-- You can use casual language and light humour`;
+- Confident but humble — you know your stuff but you don't show off
+- Concise, practical, action-oriented
+- Casual and friendly — light humour is fine
+- Never over-explain unless asked
+- When introducing yourself, keep it short and sharp — no need to list every capability`;
+
+
 
 async function askBrain(userMessage, context = '') {
   const messages = [
@@ -103,11 +105,27 @@ const client = new Client({
 const BOT_PREFIX = '!em';
 
 client.on('messageCreate', async (message) => {
-  if (message.author.bot) return;
-  if (!message.content.startsWith(BOT_PREFIX)) return;
+    if (message.author.bot) return;
 
-  const userMessage = message.content.slice(BOT_PREFIX.length).trim();
-  if (!userMessage) return;
+    let userMessage = '';
+    const isMentioned = message.mentions.has(client.user);
+    const isReply = message.reference && message.reference.messageId;
+    const hasPrefix = message.content.startsWith('!em');
+    
+    if (hasPrefix) {
+      userMessage = message.content.slice(3).trim();
+    } else if (isMentioned) {
+      userMessage = message.content.replace(/<@!?\d+>/g, '').trim();
+    } else if (isReply) {
+      // Check if replying to the bot's message
+      const repliedMsg = await message.channel.messages.fetch(message.reference.messageId);
+      if (repliedMsg.author.id !== client.user.id) return;
+      userMessage = message.content.trim();
+    } else {
+      return;
+    }
+    
+    if (!userMessage) return;
 
   try {
     await message.channel.sendTyping();
