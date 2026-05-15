@@ -130,6 +130,23 @@ client.on('messageCreate', async (message) => {
   try {
     await message.channel.sendTyping();
 
+    // Handle ZapAds registration command
+    if (userMessage.toLowerCase().includes('register on zapads')) {
+        if (process.env.ZAPADS_AGENT_KEY) {
+          await message.reply('Already registered on ZapAds ✅ Agent key is loaded.');
+          return;
+        }
+        try {
+          const reg = await registerAgent();
+          await message.reply(
+            `Registered on ZapAds! 🎉\n\n**API Key:** \`${reg.api_key}\`\n\n⚠️ **Save this key NOW — it's shown only once!**\nAdd it as \`ZAPADS_AGENT_KEY\` in your environment variables, then restart me.`
+          );
+        } catch (err) {
+          await message.reply(`Registration failed: ${err.message}`);
+        }
+        return;
+      }
+
     let context = '';
 
     // Check if user wants to discover/find/list services
