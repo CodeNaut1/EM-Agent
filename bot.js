@@ -1,6 +1,9 @@
 require('dotenv').config();
 const { Client, GatewayIntentBits } = require('discord.js');
 const OpenAI = require('openai');
+const http = require('http');
+
+http.createServer((req, res) => res.end('EM Agent running')).listen(process.env.PORT || 3000);
 
 // DeepSeek uses OpenAI-compatible API
 const deepseek = new OpenAI({
