@@ -40,7 +40,8 @@ async function payLightningInvoice(bolt11Invoice) {
       query,
       variables: {
         input: {
-          paymentRequest: bolt11Invoice
+          paymentRequest: bolt11Invoice,
+          walletId: "6beda7a4-576d-4c2a-8ce7-a07ed78eb993"
         }
       }
     })
